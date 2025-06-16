@@ -4,6 +4,14 @@ TaskReminder is a clean, lightweight Android app designed to help users track up
 
 ---
 
+## Download APK
+
+You can download the latest version here:
+
+[Download TaskReminder v1 APK](releases/TaskReminder-v1.apk)
+
+---
+
 ## Features
 
 - **Task Creation**  
