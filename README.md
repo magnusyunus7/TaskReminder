@@ -57,7 +57,7 @@ MainActivity (Home Screen)
 
 - **Open in Android Studio**
 
-(File → Open → select the project folder)
+`(File → Open → select the project folder)`
 
 - **Run on an emulator or a physical device**
 
