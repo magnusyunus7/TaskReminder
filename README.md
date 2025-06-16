@@ -51,9 +51,9 @@ MainActivity (Home Screen)
 
 - **Clone the repo**
 
-git clone https://github.com/yourusername/TaskReminder.git
+`git clone https://github.com/yourusername/TaskReminder.git`
 
-cd TaskReminder
+`cd TaskReminder`
 
 - **Open in Android Studio**
 
@@ -70,7 +70,7 @@ In Android Studio:
 
 - **Locate your APK at:**
 
-app/build/outputs/apk/debug/app-debug.apk
+`app/build/outputs/apk/debug/app-debug.apk`
 
 ---
 
