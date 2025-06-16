@@ -8,7 +8,7 @@ TaskReminder is a clean, lightweight Android app designed to help users track up
 
 You can download the latest version here:
 
-[Download TaskReminder v1 APK](https://github.com/magnusyunus7/TaskReminder/releases/download/v1.0/TaskReminder-v1.apk)
+[TaskReminder v1 APK](https://github.com/magnusyunus7/TaskReminder/releases/download/v1.0/TaskReminder-v1.apk)
 
 ---
 
@@ -59,7 +59,7 @@ MainActivity (Home Screen)
 
 - **Clone the repo**
 
-`git clone https://github.com/yourusername/TaskReminder.git`
+`git clone https://github.com/magnusyunus7/TaskReminder.git`
 
 `cd TaskReminder`
 
