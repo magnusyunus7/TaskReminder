@@ -29,9 +29,12 @@ TaskReminder is a clean, lightweight Android app designed to help users track up
 ## App Flow
 
 MainActivity (Home Screen)
-- └── MainActivity2 (Menu)
-- ├── MainActivity3 (Add Task)
-- └── MainActivity4 (View Tasks Calendar)
+
+└── MainActivity2 (Menu)
+
+├── MainActivity3 (Add Task)
+
+└── MainActivity4 (View Tasks Calendar)
 
 ---
 
@@ -47,11 +50,14 @@ MainActivity (Home Screen)
 ## How to Build
 
 - **Clone the repo**
-- git clone https://github.com/yourusername/TaskReminder.git
-- cd TaskReminder
+
+git clone https://github.com/yourusername/TaskReminder.git
+
+cd TaskReminder
 
 - **Open in Android Studio**
-  (File → Open → select the project folder)
+
+(File → Open → select the project folder)
 
 - **Run on an emulator or a physical device**
 
@@ -63,7 +69,8 @@ In Android Studio:
 - **Go to Build → Build Bundle(s) / APK(s) → Build APK(s)**
 
 - **Locate your APK at:**
-- app/build/outputs/apk/debug/app-debug.apk
+
+app/build/outputs/apk/debug/app-debug.apk
 
 ---
 
