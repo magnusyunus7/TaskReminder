@@ -1,6 +1,7 @@
 package com.example.taskreminder;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
@@ -9,23 +10,32 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.applandeo.materialcalendarview.CalendarView;
-import com.applandeo.materialcalendarview.EventDay;
-
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import org.json.*;
+import com.applandeo.materialcalendarview.CalendarView;
+import com.applandeo.materialcalendarview.EventDay;
 
-import java.util.*;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity4 extends AppCompatActivity {
     private Button button_goback;
     private CalendarView calendarview_upcoming;
+    private ActivityResultLauncher<Intent> editTaskLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,18 +48,29 @@ public class MainActivity4 extends AppCompatActivity {
             return insets;
         });
 
+        editTaskLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        recreate();
+                    }
+                }
+        );
+
         button_goback = findViewById(R.id.buttonGoBack);
         button_goback.setOnClickListener(v -> finish());
 
         calendarview_upcoming = findViewById(R.id.calendarViewUpcoming);
         SharedPreferences prefs = getSharedPreferences("TaskData", Context.MODE_PRIVATE);
         String tasksJson = prefs.getString("tasks", "[]");
+
         Calendar today = Calendar.getInstance();
         today.set(Calendar.HOUR_OF_DAY, 0);
         today.set(Calendar.MINUTE, 0);
         today.set(Calendar.SECOND, 0);
         today.set(Calendar.MILLISECOND, 0);
         calendarview_upcoming.setMinimumDate(today);
+
         List<EventDay> events = new ArrayList<>();
         Map<String, List<JSONObject>> tasksByDate = new HashMap<>();
 
@@ -67,15 +88,14 @@ public class MainActivity4 extends AppCompatActivity {
                 cal.set(year, month, day);
 
                 events.add(new EventDay(cal, R.drawable.ic_event));
-
-                tasksByDate.putIfAbsent(dueDateStr, new ArrayList<>());
-                tasksByDate.get(dueDateStr).add(task);
+                tasksByDate.computeIfAbsent(dueDateStr, k -> new ArrayList<>()).add(task);
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
         calendarview_upcoming.setEvents(events);
+        calendarview_upcoming.setSwipeEnabled(false);
         calendarview_upcoming.setOnDayClickListener(eventDay -> {
             Calendar clicked = eventDay.getCalendar();
             String key = String.format("%04d-%02d-%02d",
@@ -106,15 +126,17 @@ public class MainActivity4 extends AppCompatActivity {
                         .setTitle("Tasks due " + key)
                         .setView(msgView)
                         .setPositiveButton("Close", null)
-                        .setNeutralButton("Delete a Task", (dialog, which) -> showDeleteTaskDialog(key, dayTasks))
+                        .setNegativeButton("Edit Task", (dialog, which) -> showEditTaskDialog(dayTasks))
+                        .setNeutralButton("Delete Task", (dialog, which) -> showDeleteTaskDialog(dayTasks))
                         .show();
             }
+            else {
+                Toast.makeText(MainActivity4.this, "No tasks due on this date", Toast.LENGTH_SHORT).show();
+            }
         });
-
-        calendarview_upcoming.setSwipeEnabled(false);
     }
 
-    private void showDeleteTaskDialog(String dateKey, List<JSONObject> dayTasks) {
+    private void showDeleteTaskDialog(List<JSONObject> dayTasks) {
         String[] taskTitles = new String[dayTasks.size()];
         for (int i = 0; i < dayTasks.size(); i++) {
             JSONObject t = dayTasks.get(i);
@@ -128,21 +150,20 @@ public class MainActivity4 extends AppCompatActivity {
                     new AlertDialog.Builder(MainActivity4.this)
                             .setTitle("Confirm Delete")
                             .setMessage("Delete task \"" + selectedTask.optString("title") + "\"?")
-                            .setPositiveButton("Yes", (dialog1, which1) -> deleteTask(selectedTask))
+                            .setPositiveButton("Yes", (d, w) -> performDeleteTask(selectedTask))
                             .setNegativeButton("No", null)
                             .show();
                 })
                 .show();
     }
 
-    private void deleteTask(JSONObject taskToDelete) {
+
+    private void performDeleteTask(JSONObject taskToDelete) {
         SharedPreferences prefs = getSharedPreferences("TaskData", Context.MODE_PRIVATE);
         String tasksJson = prefs.getString("tasks", "[]");
-
         try {
             JSONArray tasksArray = new JSONArray(tasksJson);
             JSONArray newArray = new JSONArray();
-
             for (int i = 0; i < tasksArray.length(); i++) {
                 JSONObject task = tasksArray.getJSONObject(i);
                 if (!(task.optString("title").equals(taskToDelete.optString("title")) &&
@@ -152,13 +173,30 @@ public class MainActivity4 extends AppCompatActivity {
                     newArray.put(task);
                 }
             }
-
             prefs.edit().putString("tasks", newArray.toString()).apply();
             Toast.makeText(this, "Task deleted.", Toast.LENGTH_SHORT).show();
             recreate();
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private void showEditTaskDialog(List<JSONObject> dayTasks) {
+        String[] taskTitles = new String[dayTasks.size()];
+        for (int i = 0; i < dayTasks.size(); i++) {
+            JSONObject t = dayTasks.get(i);
+            taskTitles[i] = t.optString("title") + " (" + t.optString("dueTime") + ")";
+        }
+
+        new AlertDialog.Builder(MainActivity4.this)
+                .setTitle("Select task to edit")
+                .setItems(taskTitles, (dialog, which) -> {
+                    JSONObject toEdit = dayTasks.get(which);
+                    Intent edit = new Intent(MainActivity4.this, MainActivity3.class);
+                    edit.putExtra("editMode", true);
+                    edit.putExtra("taskData", toEdit.toString());
+                    editTaskLauncher.launch(edit);
+                })
+                .show();
     }
 }
